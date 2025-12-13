@@ -1,10 +1,10 @@
 {
-  "name": "appium-remote-debugger",
+  "name": "@limrun/appium-remote-debugger",
   "description": "Appium proxy for Remote Debugger protocol",
   "keywords": [
     "appium"
   ],
-  "version": "15.7.3",
+  "version": "15.7.3-lim.1",
   "author": "Appium Contributors",
   "license": "Apache-2.0",
   "repository": {
@@ -34,6 +34,7 @@
   "dependencies": {
     "@appium/base-driver": "^10.0.0-rc.1",
     "@appium/support": "^7.0.0-rc.1",
+    "@limrun/api": "^0.27.0",
     "appium-ios-device": "^3.0.0",
     "asyncbox": "^6.1.0",
     "async-lock": "^1.4.1",

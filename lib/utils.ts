@@ -6,7 +6,7 @@ import path from 'node:path';
 import type {StringRecord} from '@appium/types';
 import type {AppInfo, AppDict, Page} from './types';
 
-const MODULE_NAME = 'appium-remote-debugger';
+const MODULE_NAME = '@limrun/appium-remote-debugger';
 export const WEB_CONTENT_BUNDLE_ID = 'com.apple.WebKit.WebContent';
 const INACTIVE_APP_CODE = 0;
 // values for the page `WIRTypeKey` entry

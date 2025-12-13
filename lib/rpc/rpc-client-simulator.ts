@@ -5,6 +5,8 @@ import net from 'node:net';
 import {RpcClient} from './rpc-client';
 import {services} from 'appium-ios-device';
 import type {RpcClientOptions, RpcClientSimulatorOptions, RemoteCommand} from '../types';
+import {startTcpTunnel} from '@limrun/api/tunnel';
+import type {LogLevel as LimLogLevel} from '@limrun/api/tunnel';
 
 /**
  * RPC client implementation for iOS simulators.
@@ -18,6 +20,10 @@ export class RpcClientSimulator extends RpcClient {
   protected socket: net.Socket | null;
   protected readonly socketPath?: string;
   protected service?: any;
+  protected tunnel: Awaited<ReturnType<typeof startTcpTunnel>> | null;
+  protected readonly limInstanceApiUrl?: string;
+  protected readonly limInstanceToken?: string;
+  protected readonly limLogLevel: LimLogLevel;
 
   /**
    * @param opts - Options for configuring the RPC client, including
@@ -26,7 +32,15 @@ export class RpcClientSimulator extends RpcClient {
   constructor(opts: RpcClientOptions & RpcClientSimulatorOptions = {}) {
     super(opts);
 
-    const {socketPath, host = '::1', port, messageProxy} = opts;
+    const {
+      socketPath,
+      host = '::1',
+      port,
+      messageProxy,
+      limInstanceApiUrl,
+      limInstanceToken,
+      limLogLevel,
+    } = opts;
 
     // host/port config for TCP communication, socketPath for unix domain sockets
     this.host = host;
@@ -35,6 +49,10 @@ export class RpcClientSimulator extends RpcClient {
 
     this.socket = null;
     this.socketPath = socketPath;
+    this.tunnel = null;
+    this.limInstanceApiUrl = limInstanceApiUrl;
+    this.limInstanceToken = limInstanceToken;
+    this.limLogLevel = limLogLevel ?? 'info';
   }
 
   /**
@@ -65,9 +83,24 @@ export class RpcClientSimulator extends RpcClient {
           }
         });
       } else {
-        // unix domain socket
-        log.debug(`Connecting to remote debugger through unix domain socket: '${this.socketPath}'`);
-        this.socket = net.connect(this.socketPath);
+        if (!this.limInstanceApiUrl || !this.limInstanceToken) {
+          throw new Error('limInstanceApiUrl and limInstanceToken are required');
+        }
+        const url = `${this.limInstanceApiUrl}/port-forward?socketPath=${encodeURIComponent(this.socketPath)}`;
+        this.tunnel = await startTcpTunnel(url, this.limInstanceToken, '127.0.0.1', 0, {
+          mode: 'multiplexed',
+          logLevel: this.limLogLevel,
+        });
+        log.debug(
+          `Tunnel created on '${this.tunnel.address.address}:${this.tunnel.address.port}' ` +
+            `for path '${this.socketPath}' at '${url}'`,
+        );
+        this.socket = new net.Socket();
+        this.socket.connect(this.tunnel.address.port, this.tunnel.address.address);
+        log.debug(
+          `Connected to remote debugger through tunnel on ` +
+            `'${this.tunnel.address.address}:${this.tunnel.address.port}'`,
+        );
       }
     } else {
       if (this.messageProxy) {
@@ -145,6 +178,8 @@ export class RpcClientSimulator extends RpcClient {
     log.debug('Disconnecting from remote debugger');
     await super.disconnect();
     this.service?.close();
+    await this.tunnel?.close?.();
+    this.tunnel = null;
     this.isConnected = false;
   }
 

@@ -1,4 +1,5 @@
 import type {StringRecord, AppiumLogger} from '@appium/types';
+import type {LogLevel as LimLogLevel} from '@limrun/api/tunnel';
 
 export interface AppInfo {
   id: string;
@@ -73,6 +74,10 @@ export interface RemoteDebuggerOptions {
   targetCreationTimeoutMs?: number;
   pageLoadStrategy?: string;
   log?: AppiumLogger;
+
+  limInstanceApiUrl?: string;
+  limInstanceToken?: string;
+  limLogLevel?: LimLogLevel;
 }
 
 interface RemoteDebuggerRealDeviceSpecificOptions {
@@ -107,6 +112,9 @@ export interface RpcClientSimulatorOptions {
   host?: string;
   port?: number;
   messageProxy?: any;
+  limInstanceApiUrl?: string;
+  limInstanceToken?: string;
+  limLogLevel?: LimLogLevel;
 }
 
 export type AppIdKey = string | number;
