@@ -21,6 +21,7 @@ import type {
 import type { AppiumLogger, StringRecord } from '@appium/types';
 import type { RpcClient } from './rpc/rpc-client';
 import type B from 'bluebird';
+import type { LogLevel as LimLogLevel } from '@limrun/api/tunnel';
 
 
 export const REMOTE_DEBUGGER_PORT = 27753;
@@ -60,6 +61,9 @@ export class RemoteDebugger extends EventEmitter {
   protected readonly _socketChunkSize?: number;
   protected readonly _webInspectorMaxFrameLength?: number;
   protected readonly _fullPageInitialization?: boolean;
+  protected readonly _limInstanceApiUrl?: string;
+  protected readonly _limInstanceToken?: string;
+  protected readonly _limLogLevel?: LimLogLevel;
 
   // events
   static readonly EVENT_PAGE_CHANGE: string;
@@ -133,6 +137,9 @@ export class RemoteDebugger extends EventEmitter {
       socketChunkSize,
       fullPageInitialization,
       pageLoadStrategy,
+      limInstanceApiUrl,
+      limInstanceToken,
+      limLogLevel,
     } = opts;
 
     this._bundleId = bundleId;
@@ -163,6 +170,10 @@ export class RemoteDebugger extends EventEmitter {
 
     this._pageLoadStrategy = pageLoadStrategy;
     this._skippedApps = [];
+
+    this._limInstanceApiUrl = limInstanceApiUrl;
+    this._limInstanceToken = limInstanceToken;
+    this._limLogLevel = limLogLevel;
 
     this.setup();
   }
@@ -229,6 +240,9 @@ export class RemoteDebugger extends EventEmitter {
       fullPageInitialization: this._fullPageInitialization,
       webInspectorMaxFrameLength: this._webInspectorMaxFrameLength,
       pageLoadTimeoutMs: this._pageLoadMs,
+      limInstanceApiUrl: this._limInstanceApiUrl,
+      limInstanceToken: this._limInstanceToken,
+      limLogLevel: this._limLogLevel,
     });
   }
 
